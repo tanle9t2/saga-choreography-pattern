@@ -24,21 +24,16 @@ public class PaymentConsumerConfig {
 
     @KafkaListener(topics = "order-topic", groupId = "saga-service")
     public void consumeEventAndPublisheTopic(List<OrderEvent> orderEvents) {
-//        System.out.println(orderEvents.getEventId());
+        System.out.println("consume");
         Flux.fromIterable(orderEvents)
                 .flatMap(this::processPayment)
-                .subscribe(this::handlePaymentEvent);
+                .subscribe();
     }
-
     private Mono<PaymentEvent> processPayment(OrderEvent orderEvent) {
         if (OrderStatus.ORDER_CREATED.equals(orderEvent.getOrderStatus())) {
             return Mono.fromSupplier(() -> paymentService.newOrderEvent(orderEvent));
         } else {
             return Mono.fromRunnable(() -> paymentService.cancelOrderEvent(orderEvent));
         }
-    }
-    private void handlePaymentEvent(PaymentEvent paymentEvent) {
-        kafkaTemplate.send("payment-topic", paymentEvent);
-        System.out.println("Payment event published: " + paymentEvent);
     }
 }

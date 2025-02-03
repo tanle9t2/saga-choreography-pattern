@@ -1,6 +1,7 @@
 package com.tanle.payment_service.event;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.tanle.payment_service.dto.PaymentRequestDto;
 import lombok.*;
@@ -11,6 +12,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"date"})
 public class PaymentEvent implements Event {
     private UUID eventId = UUID.randomUUID();
     private Date eventDate = new Date();

@@ -1,18 +1,22 @@
 package com.tanle.order_service.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tanle.order_service.dto.OrderRequestDto;
 import com.tanle.order_service.dto.OrderResponseDto;
 import com.tanle.order_service.entity.Order;
+import com.tanle.order_service.entity.OutBox;
 import com.tanle.order_service.event.OrderStatus;
 import com.tanle.order_service.event.PaymentEvent;
 import com.tanle.order_service.event.PaymentStatus;
 import com.tanle.order_service.kafka.OrderProducer;
 import com.tanle.order_service.repo.OrderRepo;
 
+import com.tanle.order_service.repo.OutBoxRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.function.Consumer;
 
 @Service
@@ -20,7 +24,9 @@ public class OrderService {
     @Autowired
     private OrderRepo orderRepo;
     @Autowired
-    private OrderProducer orderProducer;
+    private OutBoxRepo outBoxRepo;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Transactional
     public Order createOrder(OrderRequestDto orderRequestDto) {
@@ -28,7 +34,13 @@ public class OrderService {
         orderRequestDto.setOrderId(order.getId());
 //        //produce kafka event with status ORDER_CREATED
 //        orderStatusPublisher.publishOrderEvent(orderRequestDto, OrderStatus.ORDER_CREATED);
-        orderProducer.sendOrderConfirmation(orderRequestDto, OrderStatus.ORDER_CREATED);
+        OutBox outBox = OutBox.builder()
+                .aggregateId(order.getId().toString())
+                .createdAt(new Date())
+                .payload(objectMapper.valueToTree(orderRequestDto))
+                .isProcess(false)
+                .build();
+        outBoxRepo.save(outBox);
         return order;
     }
     public OrderResponseDto get() {
