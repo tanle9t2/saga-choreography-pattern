@@ -26,6 +26,6 @@ public class OrderProducer {
     public void sendOrderConfirmation(OrderRequestDto orderRequestDto, OrderStatus orderStatus) {
         System.out.println("publish order event");
         OrderEvent orderEvent = new OrderEvent(orderRequestDto, orderStatus);
-        kafkaTemplate.send(TOPIC, orderEvent);
+        kafkaTemplate.send(TOPIC, String.valueOf(orderRequestDto.getUserId()), orderEvent);
     }
 }

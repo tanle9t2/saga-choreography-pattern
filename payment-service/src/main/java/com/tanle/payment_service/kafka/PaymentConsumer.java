@@ -1,27 +1,28 @@
-package com.tanle.payment_service.config;
+package com.tanle.payment_service.kafka;
 
 import com.tanle.payment_service.event.OrderEvent;
 import com.tanle.payment_service.event.OrderStatus;
 import com.tanle.payment_service.event.PaymentEvent;
 import com.tanle.payment_service.serivce.PaymentService;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.function.Function;
 
-@Configuration
-public class PaymentConsumerConfig {
+@Service
+@Slf4j
+@NoArgsConstructor
+@AllArgsConstructor
+public class PaymentConsumer {
     @Autowired
     private PaymentService paymentService;
-    @Autowired
-    private KafkaTemplate<String, PaymentEvent> kafkaTemplate;
-
-
     @KafkaListener(topics = "order-topic", groupId = "saga-service")
     public void consumeEventAndPublisheTopic(List<OrderEvent> orderEvents) {
         System.out.println("consume");
